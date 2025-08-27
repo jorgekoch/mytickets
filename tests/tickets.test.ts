@@ -2,6 +2,7 @@ import app from '../src/index';
 import supertest from 'supertest';
 import prisma from 'database';
 import { createEvent } from './factories/event-factory';
+import { createTicket, ticketBodyFactory } from './factories/ticket-factory';
 
 
 const api = supertest(app);
@@ -14,9 +15,9 @@ beforeEach(async () => {
 describe('GET /tickets/:eventId', () => {
     it("return 200 and an array of tickets", async () => {
         const event = await createEvent();
-        const id = event.id;
+        await createTicket(event.id);
 
-        const {status, body} = await api.get(`/tickets/${id}`);
+        const {status, body} = await api.get(`/tickets/${event.id}`);
         expect(status).toBe(200);
         expect(body).toEqual(
             expect.arrayContaining([
@@ -34,60 +35,33 @@ describe('GET /tickets/:eventId', () => {
 
 });
 
-// describe('POST /tickets', () => {
-//     it("return 201 and the created ticket", async () => {
-//         const eventId = await prisma.event.create({
-//             data: {
-//                 id: 1,
-//                 name: "TESTE",
-//                 date: new Date()
-//             }
-//         });
-//         const newTicket = await prisma.ticket.create({
-//             data: {
-//                 owner: "TESTE",
-//                 eventId: eventId.id,
-//                 code: "TESTETESTETESTE"
-//          }
+describe('POST /tickets', () => {
+    it("return 201 and the created ticket", async () => {
+        const newTicket = await ticketBodyFactory();
 
-//         })
-//         const {status, body} = await api.post('/tickets').send(newTicket);
-//         expect(status).toBe(201);
-//         expect(body).toEqual(
-//             expect.objectContaining({
-//                 id: expect.any(Number),
-//                 owner: newTicket.owner,
-//                 eventId: newTicket.eventId,
-//                 code: newTicket.code,
-//                 used: false
-//             })
-//         );
+        const {status, body} = await api.post('/tickets').send(newTicket);
+        expect(status).toBe(201);
+        expect(body).toEqual(
+            expect.objectContaining({
+                id: expect.any(Number),
+                owner: newTicket.owner,
+                eventId: newTicket.eventId,
+                code: newTicket.code,
+                used: false
+            })
+        );
 
-//     })
-// });
+    })
+});
 
 
-// describe('PUT /tickets/use/:id', () => {
-//     it("return 204 and the updated ticket", async () => {
-//         const eventId = await prisma.event.create({
-//             data: {
-//                 id: 1,
-//                 name: "TESTE",
-//                 date: new Date()
-//             }
-//         });
-//         const newTicket = await prisma.ticket.create({
-//             data: {
-//                 owner: "TESTE",
-//                 eventId: eventId.id,
-//                 code: "TESTETESTETESTE"
-//          }
+describe('PUT /tickets/use/:id', () => {
+    it("return 204 and the updated ticket", async () => {
+        const newTicket = await createTicket();
 
-//         }) 
-//         const {status, body} = await api.put(`/tickets/use/${newTicket.id}`);
-//         expect(status).toBe(204);
-//         expect(body).toBe("1");
+        const {status} = await api.put(`/tickets/use/${newTicket.id}`);
+        expect(status).toBe(204);
 
-//     });
+    });
 
-// });
+});
