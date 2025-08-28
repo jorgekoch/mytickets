@@ -9,3 +9,10 @@ export async function createEvent() {
         }
     });
 }
+
+export async function eventBodyFactory() {
+    return {
+        name: faker.lorem.words(3),
+        date: faker.date.future()
+    }
+}
