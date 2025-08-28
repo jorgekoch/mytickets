@@ -51,7 +51,26 @@ describe('POST /tickets', () => {
             })
         );
 
+        const ticketInDb = await prisma.ticket.findUnique({where: {id: body.id}
+        });
+        expect(ticketInDb).toEqual(
+            expect.objectContaining({
+                id: expect.any(Number),
+                owner: newTicket.owner,
+                eventId: newTicket.eventId,
+                code: newTicket.code,
+                used: false
+            })
+        );
+
     })
+
+    it("return 404 when eventId does not exist", async () => {
+        const newTicket = await ticketBodyFactory();
+        newTicket.eventId = 9999;
+        const {status} = await api.post('/tickets').send(newTicket);
+        expect(status).toBe(404);
+
 });
 
 
@@ -62,6 +81,12 @@ describe('PUT /tickets/use/:id', () => {
         const {status} = await api.put(`/tickets/use/${newTicket.id}`);
         expect(status).toBe(204);
 
+    });
+})
+
+    it("return 404 when ticket id does not exist", async () => {
+        const {status} = await api.put('/tickets/use/9999');
+        expect(status).toBe(404);
     });
 
 });
