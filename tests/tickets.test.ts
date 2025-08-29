@@ -1,8 +1,8 @@
 import app from '../src/index';
 import supertest from 'supertest';
-import prisma from 'database';
 import { createEvent } from './factories/event-factory';
 import { createTicket, ticketBodyFactory } from './factories/ticket-factory';
+import prisma from '../src/database';
 
 
 const api = supertest(app);
@@ -32,8 +32,20 @@ describe('GET /tickets/:eventId', () => {
         )
 
     });
+    
+    it("return 404 if event does not exist", async () => {
+        const {status} = await api.get('/tickets/9999');
+        expect(status).toBe(404);
+    });
 
+    it("return 404 if event exists but has no tickets", async () => {
+        const event = await createEvent();
+        const {status} = await api.get(`/tickets/${event.id}`);
+        expect(status).toBe(404);
+    });
 });
+
+
 
 describe('POST /tickets', () => {
     it("return 201 and the created ticket", async () => {
@@ -62,7 +74,6 @@ describe('POST /tickets', () => {
                 used: false
             })
         );
-
     })
 
     it("return 404 when eventId does not exist", async () => {
@@ -71,6 +82,27 @@ describe('POST /tickets', () => {
         const {status} = await api.post('/tickets').send(newTicket);
         expect(status).toBe(404);
 
+    });
+
+    it("return 409 when ticket code already exists for event", async () => {
+        const event = await createEvent();
+        const ticketData = await ticketBodyFactory();
+        ticketData.eventId = event.id;
+        await api.post('/tickets').send(ticketData);
+        const {status, body} = await api.post('/tickets').send(ticketData);
+        expect(status).toBe(409);
+        expect(body).toHaveProperty('message');
+    });
+
+    it("return 403 when event date is in the past", async () => {
+        const event = await createEvent();
+        await prisma.event.update({ where: { id: event.id }, data: { date: new Date('2000-01-01') } });
+        const ticketData = await ticketBodyFactory();
+        ticketData.eventId = event.id;
+        const {status, body} = await api.post('/tickets').send(ticketData);
+        expect(status).toBe(403);
+        expect(body).toHaveProperty('message');
+    })
 });
 
 
@@ -82,11 +114,19 @@ describe('PUT /tickets/use/:id', () => {
         expect(status).toBe(204);
 
     });
-})
+
 
     it("return 404 when ticket id does not exist", async () => {
         const {status} = await api.put('/tickets/use/9999');
         expect(status).toBe(404);
+    });
+
+    it("return 403 when ticket is already used", async () => {
+        const ticket = await createTicket();
+        await prisma.ticket.update({ where: { id: ticket.id }, data: { used: true } });
+        const {status, body} = await api.put(`/tickets/use/${ticket.id}`);
+        expect(status).toBe(403);
+        expect(body).toHaveProperty('message');
     });
 
 });

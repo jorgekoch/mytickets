@@ -1,6 +1,6 @@
 import app from '../src/index';
 import supertest from 'supertest';
-import prisma from 'database';
+import prisma from '../src/database';
 import { createEvent, eventBodyFactory } from './factories/event-factory';
 
 const api = supertest(app);
@@ -43,6 +43,13 @@ describe('POST /events', () => {
         date: newEvent.date,
       })
     );
+  });
+
+  it("return 409 when try to create an event with a name that already exists", async () => {
+    const newEvent = await eventBodyFactory();
+    await api.post('/events').send(newEvent);
+    const { status } = await api.post('/events').send(newEvent);
+    expect(status).toBe(409);
   });
 });
 
