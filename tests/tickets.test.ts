@@ -107,7 +107,7 @@ describe('POST /tickets', () => {
 
 
 describe('PUT /tickets/use/:id', () => {
-    it("return 204 and the updated ticket", async () => {
+    it("return 204 for the updated ticket", async () => {
         const newTicket = await createTicket();
 
         const {status} = await api.put(`/tickets/use/${newTicket.id}`);

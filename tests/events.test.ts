@@ -40,7 +40,7 @@ describe('POST /events', () => {
       expect.objectContaining({
         id: expect.any(Number),
         name: newEvent.name,
-        date: newEvent.date,
+        date: newEvent.date.toISOString(),
       })
     );
   });
@@ -64,7 +64,7 @@ describe('PUT /events/:id', () => {
       expect.objectContaining({
         id: event.id,
         name: updateData.name,
-        date: updateData.date,
+        date: updateData.date.toISOString(),
       })
     );
   });

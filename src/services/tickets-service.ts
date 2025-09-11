@@ -1,10 +1,20 @@
-import { Event, Ticket } from "@prisma/client";
-import { ERRORS } from "../middlewares/error-middleware";
+import { Event } from "@prisma/client";
 import { CreateTicketData, findAllEventTickets, findTicketByCodeForEvent, findTicketById, saveTicket, updateTicketUse as updateTicketToUsed } from "../repositories/tickets-repository";
 import { getSpecificEvent } from "./events-service";
 
 export async function getAllTickets(eventId: number) {
-  return await findAllEventTickets(eventId);
+  const event = await getSpecificEvent(eventId);
+
+  if (!event) {
+    throw { type: "not_found", message: `Event with id ${eventId} not found.` };
+  }
+
+  const tickets = await findAllEventTickets(eventId);
+  if (tickets.length === 0) {
+    throw { type: "not_found", message: `No tickets found for event with id ${eventId}.` };
+  }
+
+  return tickets;
 }
 
 export async function createNewTicket(ticketData: CreateTicketData) {

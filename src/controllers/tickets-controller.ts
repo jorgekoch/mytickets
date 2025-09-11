@@ -16,6 +16,8 @@ export async function putTicket(req: Request, res: Response) {
 
   await useTicket(id);
   return res.sendStatus(httpStatus.NO_CONTENT);
+
+  
 }
 
 export async function postTicket(req: Request, res: Response) {

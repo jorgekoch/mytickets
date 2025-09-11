@@ -9,12 +9,12 @@ export const ERRORS = {
   forbidden: 403
 }
 
-export default function errorHandlerMiddleware(err, req: Request, res: Response, next: NextFunction) {
+export default function errorHandlerMiddleware(err: { type: string; message: any; }, req: Request, res: Response, next: NextFunction) {
   console.log(err);
   const type: string = err.type;
 
   let statusCode = ERRORS[type];
   if (!statusCode) statusCode = httpStatus.INTERNAL_SERVER_ERROR;
 
-  return res.status(statusCode).send(err.message);
+  return res.status(statusCode).send({ message: err.message });
 }
