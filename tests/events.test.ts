@@ -80,3 +80,17 @@ describe('DELETE /events', () => {
     });
 
 });
+
+describe('GET /events/:id', () => {
+  it("return 200 and the event with the given id", async () => {
+    const event = await createEvent();
+    const { status, body } = await api.get(`/events/${event.id}`);
+    expect(status).toBe(200);
+    expect(body).toEqual(
+      expect.objectContaining({
+        id: event.id,
+        name: event.name,
+        date: event.date.toISOString(),
+      })
+    );
+  })});
