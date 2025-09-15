@@ -27,7 +27,6 @@ describe('GET /events', () => {
         )
 
     });
-
 });
 
 describe('POST /events', () => {
@@ -50,6 +49,12 @@ describe('POST /events', () => {
     await api.post('/events').send(newEvent);
     const { status } = await api.post('/events').send(newEvent);
     expect(status).toBe(409);
+  });
+
+  it("return 400 when try to create an event with invalid body", async () => {
+    const newEvent = { name: 123, date: "invalid-date" };
+    const { status } = await api.post('/events').send(newEvent);
+    expect(status).toBe(422);
   });
 });
 
@@ -106,7 +111,16 @@ describe('GET /events/:id', () => {
         date: event.date.toISOString(),
       })
     );
-  })});
+  })
+  it("return 400 when try to get an event with invalid id", async () => {
+    const { status } = await api.get(`/events/invalid-id`);
+    expect(status).toBe(400);
+  });
+  it("return 404 when does not found an event with the given id", async () => {
+    const { status } = await api.get(`/events/99999`);
+    expect(status).toBe(404);
+  });
+});
 
 
 describe('GET /events/:id', () => {
