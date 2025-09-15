@@ -70,6 +70,19 @@ describe('PUT /events/:id', () => {
   });
 });
 
+describe('PUT /events/:id', () => {
+  it("return 409 when try to update an event with a name that already exists", async () => {
+    const event1 = await createEvent();
+    const event2 = await createEvent();
+    const updateData = {
+      name: event1.name,
+      date: event2.date,
+    };
+    const { status } = await api.put(`/events/${event2.id}`).send(updateData);
+    expect(status).toBe(409);
+  });
+});
+
 describe('DELETE /events', () => {
     it("return 204 and the event deleted", async () => {
         const event = await createEvent();
@@ -94,3 +107,11 @@ describe('GET /events/:id', () => {
       })
     );
   })});
+
+
+describe('GET /events/:id', () => {
+  it("return 404 when try to get an event that does not exist", async () => {
+    const { status } = await api.get(`/events/99999`);
+    expect(status).toBe(404);
+  });
+});
